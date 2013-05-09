@@ -24,7 +24,8 @@ cdef public void c_func(double *w, void *f_py, double *b, int nr_variable) with 
     string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
     out = (<object> f_py)(x0_np)
     b[0] = out
-    Py_DECREF(x0_np)
+    del x0_np
+
 
 cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef np.ndarray[np.float64_t, ndim=1] g_np
@@ -35,7 +36,9 @@ cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable) with 
     g_np = np.asarray(out)
     assert g_np.size == nr_variable
     string.memcpy(<void *> b, <void *> g_np.data, nr_variable * sizeof(double))
-    Py_DECREF(x0_np)
+    del g_np
+    del x0_np
+
 
 cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef np.ndarray[np.float64_t, ndim=1] Hs_np
@@ -47,8 +50,8 @@ cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
     assert Hs_np.size == nr_variable * nr_variable
     string.memcpy(<void *> b, <void *> Hs_np.data, 
         nr_variable * nr_variable * sizeof(double))
-    Py_DECREF(x0_np)
-
+    del Hs_np
+    del x0_np
 
 def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
     """
@@ -79,18 +82,14 @@ def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
         <void *> py_hess, c_hess, nr_variable)
 
     cdef TRON *solver = new TRON(fc, c_tol, c_max_iter)
+    print('const')
     solver.tron(<double *> x0_np.data)
-    Py_DECREF(py_func)
-    Py_DECREF(py_grad)
-    Py_DECREF(py_hess)        
-    Py_DECREF(py_func)
-    Py_DECREF(py_grad)
-    Py_DECREF(py_hess)        
+    print('out')
 
     del fc
     del solver
-    import sys
-    print sys.getrefcount(py_func)
-    print sys.getrefcount(py_grad)
+    # import sys
+    # print sys.getrefcount(py_func)
+    # print sys.getrefcount(py_grad)
 
     return x0_np
