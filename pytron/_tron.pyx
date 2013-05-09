@@ -39,8 +39,7 @@ cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
     string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
-    cdef object func = <object> f_py
-    out = func(x0_np)
+    out = (<object> f_py)(x0_np)
     Hs_np = np.asarray(out).ravel('C')
     assert Hs_np.size == nr_variable * nr_variable
     string.memcpy(<void *> b, <void *> Hs_np.data, 
