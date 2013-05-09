@@ -1,6 +1,7 @@
 import numpy as np
 cimport numpy as np
 from libc cimport string
+from python_ref cimport Py_INCREF, Py_DECREF
 
 np.import_array()
 
@@ -17,12 +18,13 @@ cdef extern from "tron.h":
         TRON(func_callback *, double, int)
         void tron(double *)
 
-cdef public void c_func(double *w, void *f_py, double *out, int nr_variable):
+cdef public void c_func(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
     string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
-    tmp = (<object> f_py)(x0_np)
-    out[0] = tmp
+    out = (<object> f_py)(x0_np)
+    b[0] = out
+    Py_DECREF(out)
 
 cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] g_np
