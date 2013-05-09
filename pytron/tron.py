@@ -11,7 +11,7 @@ if __name__ == '__main__':
 		return w - 1
 
 	def hess(w):
-		return np.eye(w.size)
+		return np.eye(w.size).dot(w)
 
 	from _tron import minimize
 	x0 = np.ones(10)

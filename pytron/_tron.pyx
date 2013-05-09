@@ -28,25 +28,21 @@ cdef void c_func(double *w, void *f_py, double *b, int nr_variable):
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
     b[0] = (<object> f_py)(w0)
-    w0 = None
-    del w0
 
 
-cdef void c_grad(double *w, void *f_py, double *b, int nr_variable):
+cdef void c_grad(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef view.array b0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     b0.data = <char *> b
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-#    cdef view.array w0 = <double[:nr_variable]> w
     out = (<object> f_py)(w0)
-    b0[...] = out
-    del b0, w0, out
+    b0[:] = out[:]
 
 
-cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
-    cdef view.array b0 = view.array(shape=(nr_variable * nr_variable,), 
+cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
+    cdef view.array b0 = view.array(shape=(nr_variable,), 
         itemsize=sizeof(double), format='d',
         mode='c', allocate_buffer=False)
     b0.data = <char *> b
@@ -55,8 +51,8 @@ cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
         mode='c', allocate_buffer=False)
     w0.data = <char *> w
     out = (<object> f_py)(w0)
-    b0[:] = out
-    del b0, w0, out
+    b0[:] = out[:]
+
 
 def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
     """
@@ -96,8 +92,8 @@ def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
 
 #    del fc
 #    del solver
-    import sys
-    print sys.getrefcount(py_func)
+#    import sys
+#    print sys.getrefcount(py_func)
     # print sys.getrefcount(py_grad)
 
     return x0_np
