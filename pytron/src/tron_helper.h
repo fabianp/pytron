@@ -19,12 +19,11 @@ public:
 	};
 
 	~func_callback() {};
-
 	double fun(double *w);
 	void grad(double *w, double *g);
 	void Hv(double *s, double *Hs);
-
 	int get_nr_variable(void);
+
 protected:
 	double tmp;
 	tron_cb c_func;

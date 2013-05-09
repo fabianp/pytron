@@ -18,16 +18,14 @@ cdef extern from "tron.h":
         TRON(func_callback *, double, int)
         void tron(double *)
 
-cdef public void c_func(double *w, void *f_py, double *b, int nr_variable) with gil:
+cdef public void c_func(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
     string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
-    out = (<object> f_py)(x0_np)
-    b[0] = out
-    del x0_np
+    b[0] = (<object> f_py)(x0_np)
 
 
-cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable) with gil:
+cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] g_np
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.zeros(nr_variable, dtype=np.float64)
@@ -36,11 +34,9 @@ cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable) with 
     g_np = np.asarray(out)
     assert g_np.size == nr_variable
     string.memcpy(<void *> b, <void *> g_np.data, nr_variable * sizeof(double))
-    del g_np
-    del x0_np
 
 
-cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
+cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
     cdef np.ndarray[np.float64_t, ndim=1] Hs_np
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
@@ -50,8 +46,6 @@ cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
     assert Hs_np.size == nr_variable * nr_variable
     string.memcpy(<void *> b, <void *> Hs_np.data, 
         nr_variable * nr_variable * sizeof(double))
-    del Hs_np
-    del x0_np
 
 def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
     """
@@ -86,8 +80,8 @@ def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
     solver.tron(<double *> x0_np.data)
     print('out')
 
-    del fc
-    del solver
+#    del fc
+#    del solver
     # import sys
     # print sys.getrefcount(py_func)
     # print sys.getrefcount(py_grad)
