@@ -1,16 +1,17 @@
 #include "tron.h"
 
-typedef void (*f_cb)(double *, void *, double *, int);
-typedef void (*grad_cb)(double *, double *);
-typedef void (*hess_cb)(double *, double *);
+typedef void (*tron_cb)(double *, void *, double *, int);
 
-class func_callback: public function
-{
+class func_callback: public function {
 
 public:
-	func_callback(void *f_py, f_cb c_func, grad_cb c_grad, 
-		hess_cb c_hess, int nr_variable) {
-		this->f_py = f_py;
+	func_callback(void *py_func, tron_cb c_func, 
+	void *py_grad, tron_cb c_grad, 
+	void *py_hess, tron_cb c_hess, 
+	int nr_variable) {
+		this->py_func = py_func;
+		this->py_grad = py_grad;
+		this->py_hess = py_hess;
 		this->c_func = c_func;
 		this->c_grad = c_grad;
 		this->c_hess = c_hess;
@@ -26,10 +27,12 @@ public:
 	int get_nr_variable(void);
 protected:
 	double tmp;
-	f_cb c_func;
-	void *f_py;
-	grad_cb c_grad;
-	hess_cb c_hess;
+	tron_cb c_func;
+	tron_cb c_grad;
+	tron_cb c_hess;
+	void *py_func;
+	void *py_grad;
+	void *py_hess;
 	int nr_variable;
 };
 

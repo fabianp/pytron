@@ -87,6 +87,7 @@ void TRON::tron(double *w)
 
 	while (iter <= max_iter && search)
 	{
+
 		cg_iter = trcg(delta, g, s, r);
 
 		memcpy(w_new, w, sizeof(double)*n);

@@ -1,46 +1,52 @@
 import numpy as np
 cimport numpy as np
-
 from libc cimport string
 
+np.import_array()
 
 cdef extern from "tron_helper.h":
-    ctypedef void (*f_cb)(double *, void *, double *, int)
-    ctypedef void (*grad_cb)(double *, double *)
-    ctypedef void (*hess_cb)(double *, double *)
+    ctypedef void (*tron_cb)(double *, void *, double *, int)
     cdef cppclass func_callback:
-        func_callback(void *f_py, f_cb c_func, grad_cb c_grad, 
-            hess_cb c_hess, int nr_variable)
+        func_callback(void *, tron_cb,
+            void *, tron_cb,
+            void *, tron_cb, int nr_variable)
         double fun(double *)
 
 cdef extern from "tron.h":
-    # cdef cppclass function:
-    #     double fun(double *w)
-    #     void grad(double *w, double *g)
-    #     void Hv(double *s, double *Hs)
-    #     int get_nr_variable()
-
     cdef cppclass TRON:
         TRON(func_callback *, double, int)
-        tron(double *)
+        void tron(double *)
 
+cdef public void c_func(double *w, void *f_py, double *out, int nr_variable):
+    cdef np.ndarray[np.float64_t, ndim=1] x0_np
+    x0_np = np.empty(nr_variable, dtype=np.float64)
+    string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
+    tmp = (<object> f_py)(x0_np)
+    out[0] = tmp
 
-cdef void c_func(double *w, void *f_py, double *out, int nr_variable):
-  cdef np.ndarray[np.float64_t, ndim=1] w_np
-  w_np = np.empty(nr_variable, dtype=np.float64)
-  string.memcpy(<void *> w_np.data, <void *> w, nr_variable * sizeof(double))
-  tmp  = (<object> f_py)(w_np)
-  print <float> tmp
-  out[0] = <double> (<object> f_py)(w_np)
-  print out[0]
+cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable):
+    cdef np.ndarray[np.float64_t, ndim=1] g_np
+    cdef np.ndarray[np.float64_t, ndim=1] x0_np
+    x0_np = np.zeros(nr_variable, dtype=np.float64)
+    string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
+    out = (<object> f_py)(x0_np)
+    g_np = np.asarray(out)
+    assert g_np.size == nr_variable
+    string.memcpy(<void *> b, <void *> g_np.data, nr_variable * sizeof(double))
 
-cdef void c_grad(double *a, double *b):
-    return
+cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
+    cdef np.ndarray[np.float64_t, ndim=1] Hs_np
+    cdef np.ndarray[np.float64_t, ndim=1] x0_np
+    x0_np = np.empty(nr_variable, dtype=np.float64)
+    string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
+    cdef object func = <object> f_py
+    out = func(x0_np)
+    Hs_np = np.asarray(out).ravel('C')
+    assert Hs_np.size == nr_variable * nr_variable
+    string.memcpy(<void *> b, <void *> Hs_np.data, 
+        nr_variable * nr_variable * sizeof(double))
 
-cdef void c_hess(double *a, double *b):
-    return
-
-def minimize(f, grad, hess, x0, *args):
+def minimize(f, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
     """
     f : callable
         f(w, *args)
@@ -48,38 +54,28 @@ def minimize(f, grad, hess, x0, *args):
     hess: callable
     """
 
-    x0 = np.asarray(x0)
-    cdef int nr_variable = x0.size
-
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
-    cdef np.ndarray[np.float64_t, ndim=1] w_np
-    #cdef np.ndarray[np.float64_t, ndim=1] g_np
-    #cdef np.ndarray[np.float64_t, ndim=1] s_np
-    cdef np.ndarray[np.float64_t, ndim=1] Hs_np
+    x0_np = np.asarray(x0, dtype=np.float64)
+    cdef int nr_variable = x0.size
+    cdef double c_tol = tol
+    cdef int c_max_iter = max_iter
 
-    x0_np = np.asarray(x0)
-    w_np = np.zeros(x0.size, dtype=np.float64)
-    Hs_np = np.zeros(x0.size * x0.size, dtype=np.float64)
+    def py_func(w):
+        return f(w, *args)
 
-    cdef void *f_py
-    fpy = lambda x: f(x, *args)
-    cdef func_callback * ff = new func_callback(f_py, c_func, c_grad,
-         c_hess, nr_variable)
+    def py_grad(w):
+        return grad(w, *args)
 
-    print x0_np
-    ff.fun(<double *> x0_np.data)
+    def py_hess(w):
+        return hess(w, *args)
 
+    cdef func_callback * fc = new func_callback(
+        <void *> py_func, c_func, 
+        <void *> py_grad, c_grad,
+        <void *> py_hess, c_hess, nr_variable)
 
-    # cdef void c_grad(double *w, double *g):
-    #   # memcpy could be avoided
-    #   string.memcpy(w_np.data, w, x0.size * sizeof(double))
-    #   g_np = grad(w_np, *args)
-    #   string.memcpy(g, g_np.data, x0.size * sizeof(double))
-
-    # cdef void c_hess(double *s, double *Hs):
-    #   s_np = np.empty(x0.size, dtype=np.float64)
-    #   string.memcpy(s_np.data, s, x0.size * sizeof(double))
-    #   hess_np = hess(s_np, *args)
-    #   string.memcpy(Hs, Hs_np, Hs_np.size * sizeof(double))
-
-
+    cdef TRON *solver = new TRON(fc, c_tol, c_max_iter)
+    solver.tron(<double *> x0_np.data)
+    del fc
+    del solver
+    return x0_np
