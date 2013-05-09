@@ -1,12 +1,13 @@
 #include "tron_helper.h"
-
+#include <iostream>
 
 
 double func_callback::fun(double *w)
 {
-	double out;
-	c_func(w, f_py, &out, nr_variable);
-	return out;
+	// I really don't know how to code properly in C++
+	c_func(w, f_py, &tmp, nr_variable);
+	std::cout << tmp << '\n';
+	return tmp;
 }
 
 void func_callback::grad(double *w, double *g)

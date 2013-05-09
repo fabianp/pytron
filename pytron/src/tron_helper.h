@@ -25,6 +25,7 @@ public:
 
 	int get_nr_variable(void);
 protected:
+	double tmp;
 	f_cb c_func;
 	void *f_py;
 	grad_cb c_grad;

@@ -26,9 +26,13 @@ cdef extern from "tron.h":
 
 
 cdef void c_func(double *w, void *f_py, double *out, int nr_variable):
+  cdef np.ndarray[np.float64_t, ndim=1] w_np
   w_np = np.empty(nr_variable, dtype=np.float64)
-  string.memcpy(<void *> w_np.data, w, nr_variable * sizeof(double))
+  string.memcpy(<void *> w_np.data, <void *> w, nr_variable * sizeof(double))
+  tmp  = (<object> f_py)(w_np)
+  print <float> tmp
   out[0] = <double> (<object> f_py)(w_np)
+  print out[0]
 
 cdef void c_grad(double *a, double *b):
     return
@@ -54,15 +58,16 @@ def minimize(f, grad, hess, x0, *args):
     cdef np.ndarray[np.float64_t, ndim=1] Hs_np
 
     x0_np = np.asarray(x0)
-    w_np = np.empty(x0.size, dtype=np.float64)
-    Hs_np = np.empty(x0.size * x0.size, dtype=np.float64)
+    w_np = np.zeros(x0.size, dtype=np.float64)
+    Hs_np = np.zeros(x0.size * x0.size, dtype=np.float64)
 
     cdef void *f_py
     fpy = lambda x: f(x, *args)
     cdef func_callback * ff = new func_callback(f_py, c_func, c_grad,
          c_hess, nr_variable)
 
-    ff.fun(<double *> w_np.data)
+    print x0_np
+    ff.fun(<double *> x0_np.data)
 
 
     # cdef void c_grad(double *w, double *g):
