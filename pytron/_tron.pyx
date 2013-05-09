@@ -18,14 +18,14 @@ cdef extern from "tron.h":
         TRON(func_callback *, double, int)
         void tron(double *)
 
-cdef public void c_func(double *w, void *f_py, double *b, int nr_variable):
+cdef void c_func(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
     string.memcpy(<void *> x0_np.data, <void *> w, nr_variable * sizeof(double))
     b[0] = (<object> f_py)(x0_np)
 
 
-cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable):
+cdef void c_grad(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef np.ndarray[np.float64_t, ndim=1] g_np
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.zeros(nr_variable, dtype=np.float64)
@@ -36,7 +36,7 @@ cdef public void c_grad(double *w, void *f_py, double *b, int nr_variable):
     string.memcpy(<void *> b, <void *> g_np.data, nr_variable * sizeof(double))
 
 
-cdef void c_hess(double *w, void *f_py, double *b, int nr_variable):
+cdef void c_hess(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef np.ndarray[np.float64_t, ndim=1] Hs_np
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.empty(nr_variable, dtype=np.float64)
