@@ -22,7 +22,8 @@ Operating System :: Unix
 
 """
 
-sources =['pytron/_tron.pyx', 'pytron/src/tron.cpp'] + glob('pytron/src/blas/*.c')
+sources =['pytron/_tron.pyx', 'pytron/src/tron.cpp', 'pytron/src/tron_helper.cpp'] + \
+    glob('pytron/src/blas/*.c')
 
 
 setup(
@@ -40,6 +41,7 @@ setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension('pytron._tron',
         sources=sources,
+#        library_dirs = ['pytron/src/'],
         language='c++', include_dirs=[np.get_include(), 'pytron/src/'])],
 
 )
