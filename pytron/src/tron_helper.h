@@ -1,14 +1,16 @@
 #include "tron.h"
 
 typedef void (*tron_cb)(double *, void *, double *, int);
+typedef void (*hess_cb)(double *, double *, void *, double *, int);
 
 class func_callback: public function {
 
 public:
-	func_callback(void *py_func, tron_cb c_func, 
+	func_callback(double *x0, void *py_func, tron_cb c_func, 
 	void *py_grad, tron_cb c_grad, 
-	void *py_hess, tron_cb c_hess, 
+	void *py_hess, hess_cb c_hess, 
 	int nr_variable) {
+		this->w = x0;
 		this->py_func = py_func;
 		this->py_grad = py_grad;
 		this->py_hess = py_hess;
@@ -26,9 +28,10 @@ public:
 
 protected:
 	double tmp;
+	double *w;
 	tron_cb c_func;
 	tron_cb c_grad;
-	tron_cb c_hess;
+	hess_cb c_hess;
 	void *py_func;
 	void *py_grad;
 	void *py_hess;
