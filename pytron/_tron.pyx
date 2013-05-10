@@ -91,7 +91,7 @@ def minimize(func, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
 
     def py_hess(s, w):
         s0 = np.asarray(s)
-        w0 = np.asarray(s)
+        w0 = np.asarray(w)
         out = hess(s0, w0, *args)
         return np.asarray(out, dtype=np.float64).ravel()
 

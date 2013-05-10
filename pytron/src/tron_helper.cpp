@@ -1,4 +1,5 @@
 #include "tron_helper.h"
+#include <string.h>
 #include <stdio.h>
 
 double func_callback::fun(double *w)
@@ -10,14 +11,13 @@ double func_callback::fun(double *w)
 
 void func_callback::grad(double *w, double *g)
 {
+	memcpy(this->w, w, nr_variable * sizeof(double));
 	c_grad(w, py_grad, g, nr_variable);
-	this->w = w;
 }
 
 void func_callback::Hv(double *s, double *Hs)
 {
-	double *w = this->w;
-	c_hess(s, w, py_hess, Hs, nr_variable);
+	c_hess(s, this->w, py_hess, Hs, nr_variable);
 }
 
 int func_callback::get_nr_variable(void)

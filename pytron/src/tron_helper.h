@@ -10,7 +10,7 @@ public:
 	void *py_grad, tron_cb c_grad, 
 	void *py_hess, hess_cb c_hess, 
 	int nr_variable) {
-		this->w = x0;
+		this->w = new double[nr_variable];
 		this->py_func = py_func;
 		this->py_grad = py_grad;
 		this->py_hess = py_hess;
@@ -20,7 +20,9 @@ public:
 		this->nr_variable = nr_variable;
 	};
 
-	~func_callback() {};
+	~func_callback() {
+		delete this->w;
+	};
 	double fun(double *w);
 	void grad(double *w, double *g);
 	void Hv(double *s, double *Hs);
