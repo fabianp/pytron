@@ -2,9 +2,6 @@ from cython cimport view
 import numpy as np
 cimport numpy as np
 from libc cimport string
-#from python_ref cimport Py_INCREF, Py_DECREF
-
-np.import_array()
 
 cdef extern from "tron_helper.h":
     ctypedef void (*tron_cb)(double *, void *, double *, int)
@@ -18,6 +15,7 @@ cdef extern from "tron.h":
     cdef cppclass TRON:
         TRON(func_callback *, double, int)
         void tron(double *)
+
 
 cdef void c_func(double *w, void *f_py, double *b, int nr_variable) with gil:
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
@@ -69,6 +67,10 @@ def minimize(func, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
         hess(w, s, *args) returns the dot product H.dot(s), where
         H is the Hessian matrix at w. It must return a numpy array
         of size x0.size
+
+    Returns
+    -------
+    w : array
     """
 
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
@@ -91,7 +93,7 @@ def minimize(func, grad, hess, x0, args=(), max_iter=1000, tol=1e-6):
         s0 = np.asarray(s)
         w0 = np.asarray(s)
         out = hess(s0, w0, *args)
-        return out.astype(np.float64).ravel()
+        return np.asarray(out, dtype=np.float64).ravel()
 
     cdef func_callback * fc = new func_callback(
         <double *> x0_np.data,

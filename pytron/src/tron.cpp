@@ -71,12 +71,12 @@ void TRON::tron(double *w)
 	double *w_new = new double[n];
 	double *g = new double[n];
 
-	/* Edit (Fabian): don't initilize to zero
+	/* Edit (Fabian): allow for warm restarts
 	for (i=0; i<n; i++)
 		w[i] = 0;
 	*/
 
-        f = fun_obj->fun(w);
+    f = fun_obj->fun(w);
 	fun_obj->grad(w, g);
 	delta = dnrm2_(&n, g, &inc);
 	double gnorm1 = delta;

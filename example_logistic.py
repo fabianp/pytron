@@ -11,9 +11,10 @@ def loss(w, X, y, alpha):
     z = X.dot(w)
     yz = y * z
     idx = yz > 0
-    res = np.log(1 + np.exp(-yz[idx])).sum()
-    res += (-yz[~idx] + np.log(1 + np.exp(yz[~idx]))).sum()
-    return res + .5 * alpha * w.dot(w)
+    out = np.zeros_like(yz)
+    out[idx] = np.log(1 + np.exp(-yz[idx]))
+    out[~idx] = (-yz[~idx] + np.log(1 + np.exp(yz[~idx])))
+    return out.sum() + .5 * alpha * w.dot(w)
 
 def gradient(w, X, y, alpha):
     # gradient of the logistic loss
@@ -24,22 +25,24 @@ def gradient(w, X, y, alpha):
 
 def hessian(s, w, X, y, alpha):
     # returns Hessian.dot(w)
-    tmp0 = X * y[:, None]
-    tmp1 = tmp0.dot(w)
-    d = phi(tmp1) * (1 - phi(tmp1))
-    return X.T.dot(d * X.dot(s)) + alpha * s
+    z = X.dot(w)
+    z = phi(y * z)
+    d = z * (1 - z)
+    wa = d * X.dot(s)
+    Hs = X.T.dot(wa)
+    return Hs + alpha * s
 
 
 # set the data
-n_samples, n_features = 10000, 1000
+n_samples, n_features = 10, 100
 X = np.random.randn(n_samples, n_features)
 y = np.sign(X.dot(5 * np.random.randn(n_features)))
 alpha = 1.
-x0 = np.zeros(n_features)
+x0 = np.random.randn(n_features)
 
 # call the solver
 sol = minimize(loss, gradient, hessian, x0, args=(X, y, alpha), 
-    max_iter=5000, tol=1e-1)
+    max_iter=5000, tol=100.)
 
 from sklearn import linear_model
 clf = linear_model.LogisticRegression(C=1./alpha, fit_intercept=False)
