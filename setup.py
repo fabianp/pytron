@@ -41,8 +41,6 @@ setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [Extension('pytron._tron',
         sources=sources,
-#        library_dirs = ['pytron/src/'],
-        extra_compile_args=['-O0'],
         language='c++', include_dirs=[np.get_include(), 'pytron/src/'])],
 
 )
