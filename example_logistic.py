@@ -6,6 +6,7 @@ def phi(t):
     # helper function
     return 1. / (1 + np.exp(-t))
 
+
 def loss(w, X, y, alpha):
     # loss function to be optimized, it's the logistic loss
     z = X.dot(w)
@@ -17,13 +18,20 @@ def loss(w, X, y, alpha):
     out = out.sum() + .5 * alpha * w.dot(w)
     return out
 
-def gradient(w, X, y, alpha):
+
+def grad_hess(w, X, y, alpha):
     # gradient of the logistic loss
     z = X.dot(w)
     z = phi(y * z)
     z0 = (z - 1) * y
     grad = X.T.dot(z0) + alpha * w
-    return grad
+    def Hs(s):
+        d = z * (1 - z)
+        wa = d * X.dot(s)
+        return X.T.dot(wa) + alpha * s
+
+    return grad, Hs
+
 
 def hessian(s, w, X, y, alpha):
     # H.dot(s), where H is the hessian at w of the logistic
@@ -45,7 +53,7 @@ alpha = 1.
 x0 = np.zeros(n_features)
 
 # call the solver
-sol = minimize(loss, gradient, hessian, x0, args=(X, y, alpha), 
+sol = minimize(loss, grad_hess, x0, args=(X, y, alpha),
     max_iter=5, tol=.1)
 
 from sklearn import linear_model

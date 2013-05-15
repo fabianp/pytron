@@ -1,4 +1,4 @@
-import pytron
+
 from distutils.core import setup, Extension
 from Cython.Distutils import build_ext
 import numpy as np
@@ -30,7 +30,7 @@ setup(
     name='pytron',
     description='Python bindings for TRON optimizer',
     long_description=open('README.rst').read(),
-    version=pytron.__version__,
+    version='0.1',
     author='Fabian Pedregosa',
     author_email='f@fabianp.net',
     url='http://pypi.python.org/pypi/pytron',
