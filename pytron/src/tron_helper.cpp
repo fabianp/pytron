@@ -5,13 +5,13 @@
 double func_callback::fun(double *w)
 {
 	double t;
-	c_func(w, py_func, &t, nr_variable);
+	c_func(w, py_func, &t, nr_variable, this->py_args);
 	return t;
 }
 
 void func_callback::grad(double *w, double *g)
 {
-	c_grad(w, py_grad_hess, &this->py_hess, g, nr_variable);
+	c_grad(w, py_grad_hess, &this->py_hess, g, nr_variable, this->py_args);
 }
 
 void func_callback::Hv(double *s, double *Hs)

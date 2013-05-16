@@ -5,8 +5,8 @@ from libc cimport string
 from cpython cimport Py_INCREF, Py_XDECREF, PyObject
 
 cdef extern from "tron_helper.h":
-    ctypedef void (*func_cb)(double *, void *, double *, int)
-    ctypedef void (*grad_cb)(double *, void *, void **, double *, int)
+    ctypedef void (*func_cb)(double *, void *, double *, int, void *)
+    ctypedef void (*grad_cb)(double *, void *, void **, double *, int, void *)
     ctypedef void (*hess_cb)(double *, void *, double *, int, void *)
     cdef cppclass func_callback:
         func_callback(double *, void *, func_cb,
@@ -19,22 +19,25 @@ cdef extern from "tron.h":
         void tron(double *)
 
 
-cdef void c_func(double *w, void *f_py, double *b, int nr_variable) with gil:
+cdef void c_func(double *w, void *f_py, double *b, int nr_variable,
+                 void *py_args):
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-    b[0] = (<object> f_py)(w0)
+    out = (<object> f_py)(np.asarray(w0), *(<object> py_args))
+    b[0] = out
+    # TODO: error check
 
 
 cdef void c_grad(double *w, void *grad_hess_py, void **hess_py,
-                 double *b, int nr_variable) with gil:
+                 double *b, int nr_variable, void *py_args):
     cdef view.array b0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     b0.data = <char *> b
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-    out = (<object> grad_hess_py)(w0)
+    out = (<object> grad_hess_py)(np.asarray(w0), *(<object> py_args))
     #Py_XDECREF(<PyObject *> hess_py[0]) # liberate previous one
     grad, hess = out[0], out[1]
     Py_INCREF(hess) # segfault otherwise
@@ -52,12 +55,12 @@ cdef void c_hess(double *s, void *hess_py, double *b, int nr_variable,
         mode='c', allocate_buffer=False)
     s0.data = <char *> s
     b0.data = <char *> b
-    out = (<object> hess_py)(np.array(s0))
+    out = (<object> hess_py)(np.asarray(s0))
     out = np.asarray(out, dtype=np.float)
     b0[:] = out[:]
 
 
-def minimize(func, grad, x0, args=(), max_iter=1000, tol=1e-6):
+def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
     """minimize func using Trust Region Newton algorithm
 
     Parameters
@@ -72,6 +75,8 @@ def minimize(func, grad, x0, args=(), max_iter=1000, tol=1e-6):
         hess(w, s, *args) returns the dot product H.dot(s), where
         H is the Hessian matrix at w. It must return a numpy array
         of size x0.size
+    tol: float
+        stopping criterion. XXX TODO. what is the stopping criterion ?
 
     Returns
     -------
@@ -85,28 +90,11 @@ def minimize(func, grad, x0, args=(), max_iter=1000, tol=1e-6):
     cdef int c_max_iter = max_iter
     cur_w = None
 
-    # TODO: remove
-    def py_func(w):
-        w0 = np.asarray(w)
-        return func(w0, *args)
-
-    def py_grad_hess(w):
-        w0 = np.asarray(w)
-        out, hess = grad(w0, *args)
-        return np.asarray(out, dtype=np.float64).ravel(), hess
-
     cdef func_callback * fc = new func_callback(
         <double *> x0_np.data,
-        <void *> py_func, c_func,
-        <void *> py_grad_hess, c_grad,
+        <void *> func, c_func,
+        <void *> grad_hess, c_grad,
         c_hess, nr_variable, <void *> args)
-
-    # sanity check
-#    py_func(x0)
-#    grad, hess = py_grad_hess(x0)
-#    assert grad.size == x0.size
-#    h = hess(x0)
-#    assert h.size == x0.size
 
     cdef TRON *solver = new TRON(fc, c_tol, c_max_iter)
     solver.tron(<double *> x0_np.data)

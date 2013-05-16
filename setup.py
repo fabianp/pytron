@@ -22,7 +22,7 @@ Operating System :: Unix
 
 """
 
-sources =['pytron/_tron.pyx', 'pytron/src/tron.cpp', 'pytron/src/tron_helper.cpp'] + \
+sources =['pytron/tron.pyx', 'pytron/src/tron.cpp', 'pytron/src/tron_helper.cpp'] + \
     glob('pytron/src/blas/*.c')
 
 
@@ -39,7 +39,7 @@ setup(
     license='Simplified BSD',
     requires = ['numpy', 'scipy'],
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension('pytron._tron',
+    ext_modules = [Extension('pytron.tron',
         sources=sources,
         language='c++', include_dirs=[np.get_include(), 'pytron/src/'])],
 

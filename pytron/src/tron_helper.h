@@ -1,7 +1,7 @@
 #include "tron.h"
 
-typedef void (*func_cb)(double *, void *, double *, int);
-typedef void (*grad_cb)(double *, void *, void **, double *, int);
+typedef void (*func_cb)(double *, void *, double *, int, void *);
+typedef void (*grad_cb)(double *, void *, void **, double *, int, void *);
 typedef void (*hess_cb)(double *, void *, double *, int, void *);
 
 class func_callback: public function {
