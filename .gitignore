@@ -1,2 +1,4 @@
 *.pyc
 *.so
+.idea
+pytron/tron.cpp
