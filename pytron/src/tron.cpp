@@ -47,6 +47,8 @@ TRON::TRON(const function *fun_obj, double eps, int max_iter)
 	this->eps=eps;
 	this->max_iter=max_iter;
 	tron_print_string = default_print;
+	this->n_iter = 0;
+	this->gnorm = 0.;
 }
 
 TRON::~TRON()
@@ -82,7 +84,7 @@ void TRON::tron(double *w)
 	double gnorm1 = delta;
 	double gnorm = gnorm1;
 
-	if (gnorm <= eps*gnorm1)
+	if (gnorm <= eps)
 		search = 0;
 
 	iter = 1;
@@ -133,7 +135,7 @@ void TRON::tron(double *w)
 		        fun_obj->grad(w, g);
 
 			gnorm = dnrm2_(&n, g, &inc);
-			if (gnorm <= eps*gnorm1)
+			if (gnorm <= eps)
 				break;
 		}
 		if (f < -1.0e+32)
@@ -153,6 +155,9 @@ void TRON::tron(double *w)
 			break;
 		}
 	}
+
+	this->n_iter = iter;
+	this->gnorm = gnorm;
 
 	delete[] g;
 	delete[] r;

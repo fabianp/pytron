@@ -37,9 +37,9 @@ setup(
     packages=['pytron'],
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     license='Simplified BSD',
-    requires = ['numpy', 'scipy'],
-    cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension('pytron.tron',
+    requires=['numpy', 'scipy'],
+    cmdclass={'build_ext': build_ext},
+    ext_modules=[Extension('pytron.tron',
         sources=sources,
         language='c++', include_dirs=[np.get_include(), 'pytron/src/'])],
 

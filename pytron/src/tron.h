@@ -20,6 +20,8 @@ public:
 
 	void tron(double *w);
 	void set_print_string(void (*i_print) (const char *buf));
+	int n_iter;
+	double gnorm;
 
 private:
 	int trcg(double delta, double *g, double *s, double *r);

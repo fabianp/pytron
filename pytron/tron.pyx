@@ -1,5 +1,6 @@
 from cython cimport view
 import numpy as np
+from scipy import optimize
 cimport numpy as np
 from libc cimport string
 from cpython cimport Py_INCREF, Py_XDECREF, PyObject
@@ -17,6 +18,8 @@ cdef extern from "tron.h":
     cdef cppclass TRON:
         TRON(func_callback *, double, int)
         void tron(double *)
+        int n_iter
+        double gnorm
 
 
 cdef void c_func(double *w, void *f_py, double *b, int nr_variable,
@@ -60,7 +63,7 @@ cdef void c_hess(double *s, void *hess_py, double *b, int nr_variable,
     b0[:] = out[:]
 
 
-def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
+def minimize(func, grad_hess, x0, args=(), max_iter=500, gtol=.1):
     """minimize func using Trust Region Newton algorithm
 
     Parameters
@@ -68,25 +71,27 @@ def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
     func : callable
         func(w, *args) is the evaluation of the function at w, It
         should return a float.
-    grad: callable
-        grad(w, *args) is the gradient of func at w, it
-        should return a numpy array of size x0.size
-    hess: callable
-        hess(w, s, *args) returns the dot product H.dot(s), where
-        H is the Hessian matrix at w. It must return a numpy array
-        of size x0.size
-    tol: float
-        stopping criterion. XXX TODO. what is the stopping criterion ?
+    grad_hess: callable
+        TODO
+    x0 : array
+        starting point for iteration.
+    gtol: float
+        stopping criterion. Gradient norm must be less than gtol
+        before succesful termination.
 
     Returns
     -------
-    w : array
+    res : scipy.optimize.Result
+        The optimization result represented as a scipy.optimize.Result object.
+        Important attributes are: ``x`` the solution array, ``success`` a
+        boolean flag indicating if the optimizer exited successfully,
+        ``nit`` an integer for the number of iterations performed
     """
 
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
     x0_np = np.asarray(x0, dtype=np.float64)
     cdef int nr_variable = x0.size
-    cdef double c_tol = tol
+    cdef double c_gtol = gtol
     cdef int c_max_iter = max_iter
     cur_w = None
 
@@ -96,10 +101,12 @@ def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
         <void *> grad_hess, c_grad,
         c_hess, nr_variable, <void *> args)
 
-    cdef TRON *solver = new TRON(fc, c_tol, c_max_iter)
+    cdef TRON *solver = new TRON(fc, c_gtol, c_max_iter)
     solver.tron(<double *> x0_np.data)
+    success = solver.gnorm < gtol
+    result = optimize.Result(x=x0_np, success=success, nit=solver.n_iter)
 
     del fc
     del solver
 
-    return x0_np
+    return result

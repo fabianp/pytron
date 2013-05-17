@@ -53,13 +53,13 @@ alpha = 1.
 x0 = np.zeros(n_features)
 
 # call the solver
-sol = minimize(loss, grad_hess, x0, args=(X, y, alpha),
-    max_iter=5, tol=.1)
+res = minimize(loss, grad_hess, x0, args=(X, y, alpha),
+    max_iter=5, gtol=.1)
 
 from sklearn import linear_model
 clf = linear_model.LogisticRegression(C=1./alpha, fit_intercept=False)
 clf.fit(X, y)
 
 print()
-print('Solution using TRON:         %s' % sol)
-print('Solution using scikit-learn: %s' % sol)
+print('Solution using TRON:         %s' % res.x)
+print('Solution using scikit-learn: %s' % clf.coef_)
