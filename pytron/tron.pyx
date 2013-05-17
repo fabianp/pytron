@@ -17,9 +17,10 @@ cdef extern from "tron_helper.h":
 cdef extern from "tron.h":
     cdef cppclass TRON:
         TRON(func_callback *, double, int)
-        void tron(double *)
+        void tron(double *, double *)
         int n_iter
         double gnorm
+        double fun
 
 
 cdef void c_func(double *w, void *f_py, double *b, int nr_variable,
@@ -89,11 +90,13 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, gtol=.1):
     """
 
     cdef np.ndarray[np.float64_t, ndim=1] x0_np
-    x0_np = np.asarray(x0, dtype=np.float64)
+    cdef np.ndarray[np.float64_t, ndim=1] grad
     cdef int nr_variable = x0.size
     cdef double c_gtol = gtol
     cdef int c_max_iter = max_iter
     cur_w = None
+    x0_np = np.asarray(x0, dtype=np.float64)
+    grad = np.empty(x0_np.size, dtype=np.float64)
 
     cdef func_callback * fc = new func_callback(
         <double *> x0_np.data,
@@ -102,9 +105,11 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, gtol=.1):
         c_hess, nr_variable, <void *> args)
 
     cdef TRON *solver = new TRON(fc, c_gtol, c_max_iter)
-    solver.tron(<double *> x0_np.data)
+    solver.tron(<double *> x0_np.data, <double *>grad.data)
     success = solver.gnorm < gtol
-    result = optimize.Result(x=x0_np, success=success, nit=solver.n_iter)
+    result = optimize.Result(
+        x=x0_np, success=success, nit=solver.n_iter, gnorm=solver.gnorm,
+        fun=solver.fun, jac=grad)
 
     del fc
     del solver

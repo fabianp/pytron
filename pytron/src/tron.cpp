@@ -55,7 +55,7 @@ TRON::~TRON()
 {
 }
 
-void TRON::tron(double *w)
+void TRON::tron(double *w, double *g)
 {
 	// Parameters for updating the iterates.
 	double eta0 = 1e-4, eta1 = 0.25, eta2 = 0.75;
@@ -71,7 +71,6 @@ void TRON::tron(double *w)
 	double *s = new double[n];
 	double *r = new double[n];
 	double *w_new = new double[n];
-	double *g = new double[n];
 
 	/* Edit (Fabian): allow for warm restarts
 	for (i=0; i<n; i++)
@@ -158,8 +157,8 @@ void TRON::tron(double *w)
 
 	this->n_iter = iter;
 	this->gnorm = gnorm;
+	this->fun = fun;
 
-	delete[] g;
 	delete[] r;
 	delete[] w_new;
 	delete[] s;

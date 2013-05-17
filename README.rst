@@ -48,6 +48,8 @@ The modifications with respect to the orginal code are:
       whenever gradient is smaller than a given quantity, specified in the
       gtol argument
 
+    * Add the gradient to TRON::tron
+
 
 References
 ----------
