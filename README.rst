@@ -1,4 +1,3 @@
-
 Python bindings for TRON minimization software
 ==============================================
 
@@ -38,7 +37,7 @@ Examples
 Code
 ----
 This software uses the `TRON optimization software
-<http://www.mcs.anl.gov/~more/tron/>_`  (files src/tron.{h,cpp}) that was
+<http://www.mcs.anl.gov/~more/tron/>`_  (files src/tron.{h,cpp}) that was
 taken from LIBLINEAR 1.93 (BSD licensed).
 
 The modifications with respect to the orginal code are:
