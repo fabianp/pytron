@@ -1,5 +1,5 @@
-Python bindings for TRON minimization software
-==============================================
+A Trust-Region Newton Method in Python
+======================================
 
 The main function is pytron.minimize:
 
