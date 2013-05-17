@@ -1,7 +1,7 @@
 A Trust-Region Newton Method in Python
 ======================================
 
-The main function is pytron.minimize:
+The main function is pytron.minimize::
 
     def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
 
@@ -29,7 +29,7 @@ The main function is pytron.minimize:
 Stopping criterion
 ------------------
 
-It stops whenever ||grad(x_k)|| < eps * ||grad(x_{k-1})||
+It stops whenever ||grad(x)|| < eps
 
 Examples
 --------
@@ -37,7 +37,7 @@ Examples
 Code
 ----
 This software uses the `TRON optimization software
-<http://www.mcs.anl.gov/~more/tron/>_`  (files src/tron.{h,cpp}) that was
+<http://www.mcs.anl.gov/~more/tron/>`_  (files src/tron.{h,cpp}) that was
 taken from LIBLINEAR 1.93 (BSD licensed).
 
 The modifications with respect to the orginal code are:
