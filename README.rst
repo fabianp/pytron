@@ -1,7 +1,8 @@
+
 Python bindings for TRON minimization software
 ==============================================
 
-The main function is pytron.minimize:
+The main function is pytron.minimize::
 
     def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
 
@@ -29,7 +30,7 @@ The main function is pytron.minimize:
 Stopping criterion
 ------------------
 
-It stops whenever ||grad(x_k)|| < eps * ||grad(x_{k-1})||
+It stops whenever ||grad(x)|| < eps
 
 Examples
 --------
