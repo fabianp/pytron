@@ -147,8 +147,8 @@ void TRON::tron(double *w, double *g)
 			info("WARNING: actred and prered <= 0\n");
 			break;
 		}
-		if (fabs(actred) <= 1.0e-12*fabs(f) &&
-		    fabs(prered) <= 1.0e-12*fabs(f))
+		if (fabs(actred) <= 1.0e-9*eps*fabs(f) &&
+		    fabs(prered) <= 1.0e-9*eps*fabs(f))
 		{
 			info("WARNING: actred and prered too small\n");
 			break;

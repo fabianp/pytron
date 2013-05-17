@@ -29,7 +29,10 @@ The main function is pytron.minimize::
 Stopping criterion
 ------------------
 
-It stops whenever ||grad(x)|| < eps
+It stops whenever ||grad(x)|| < eps or the maximum number of iterations is
+attained.
+
+TODO: add tol
 
 Examples
 --------
@@ -65,7 +68,7 @@ S. Sathiya Keerthi (http://dl.acm.org/citation.cfm?id=1390703)
 
 The website http://www.mcs.anl.gov/~more/tron/ contains reference to this
 implementation, although the links to the software seem to be currently
-broken (May 2003).
+broken (May 2013).
 
 
 License
