@@ -41,10 +41,11 @@ void TRON::info(const char *fmt,...)
 	(*tron_print_string)(buf);
 }
 
-TRON::TRON(const function *fun_obj, double eps, int max_iter)
+TRON::TRON(const function *fun_obj, double tol, double gtol, int max_iter)
 {
 	this->fun_obj=const_cast<function *>(fun_obj);
-	this->eps=eps;
+	this->gtol=gtol;
+	this->tol=tol;
 	this->max_iter=max_iter;
 	tron_print_string = default_print;
 	this->n_iter = 0;
@@ -83,7 +84,7 @@ void TRON::tron(double *w, double *g)
 	double gnorm1 = delta;
 	double gnorm = gnorm1;
 
-	if (gnorm <= eps)
+	if (gnorm <= gtol)
 		search = 0;
 
 	iter = 1;
@@ -134,7 +135,7 @@ void TRON::tron(double *w, double *g)
 		        fun_obj->grad(w, g);
 
 			gnorm = dnrm2_(&n, g, &inc);
-			if (gnorm <= eps)
+			if (gnorm <= gtol)
 				break;
 		}
 		if (f < -1.0e+32)
@@ -147,8 +148,8 @@ void TRON::tron(double *w, double *g)
 			info("WARNING: actred and prered <= 0\n");
 			break;
 		}
-		if (fabs(actred) <= 1.0e-9*eps*fabs(f) &&
-		    fabs(prered) <= 1.0e-9*eps*fabs(f))
+		if (fabs(actred) <= tol*fabs(f) &&
+		    fabs(prered) <= tol*fabs(f))
 		{
 			info("WARNING: actred and prered too small\n");
 			break;

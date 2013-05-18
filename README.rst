@@ -57,7 +57,16 @@ The modifications with respect to the orginal code are:
       whenever gradient is smaller than a given quantity, specified in the
       gtol argument
 
-    * Add the gradient to TRON::tron
+    * Return the gradient from TRON::tron (pass by reference)
+
+    * Add `tol` option to TRON
+
+    * Rename `eps` to `gtol`.
+
+TODO
+----
+    * return status from TRON::TRON
+    * callback argument
 
 
 References
