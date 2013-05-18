@@ -1,6 +1,12 @@
 A Trust-Region Newton Method in Python
 ======================================
 
+.. DANGER::
+    This is alpha quality software and still quite rough on the edges.
+    Specifically the error management is still lacking (which means that
+    if something goes wrong in the optimization you won't see an error
+    message but just get garbage). These things are being worked out.
+
 The main function is pytron.minimize::
 
     def minimize(func, grad_hess, x0, args=(), max_iter=1000, tol=1e-6):
