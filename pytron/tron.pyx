@@ -6,12 +6,12 @@ from libc cimport string
 from cpython cimport Py_INCREF, Py_XDECREF, PyObject
 
 cdef extern from "tron_helper.h":
-    ctypedef void (*func_cb)(double *, void *, double *, int, void *)
+    ctypedef double (*func_cb)(double *, void *, int, void *)
     ctypedef void (*grad_cb)(double *, void *, void **, double *, int, void *)
     ctypedef void (*hess_cb)(double *, void *, double *, int, void *)
     cdef cppclass func_callback:
         func_callback(double *, void *, func_cb,
-            void *, grad_cb, hess_cb, int nr_variable, void *)
+            void *, grad_cb, hess_cb, void *, func_cb, int nr_variable, void *)
 
 
 cdef extern from "tron.h":
@@ -23,14 +23,14 @@ cdef extern from "tron.h":
         double fun
 
 
-cdef void c_func(double *w, void *f_py, double *b, int nr_variable,
-                 void *py_args):
+cdef double c_func(double *w, void *f_py, int nr_variable, void *py_args):
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
+    cdef double b
     w0.data = <char *> w
     out = (<object> f_py)(np.asarray(w0), *(<object> py_args))
-    b[0] = out
-    # TODO: error check
+    b = out
+    return b
 
 
 cdef void c_grad(double *w, void *grad_hess_py, void **hess_py,
@@ -63,8 +63,18 @@ cdef void c_hess(double *s, void *hess_py, double *b, int nr_variable,
     out = np.asarray(out, dtype=np.float)
     b0[:] = out[:]
 
+cdef double c_callback(double *w, void *py_callback, int nr_variable,
+                     void *py_args):
 
-def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3):
+    cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
+        mode='c', format='d', allocate_buffer=False)
+    w0.data = <char *> w
+    (<object> py_callback)(np.asarray(w0), *(<object> py_args))
+    return 0.
+
+
+def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3,
+             callback=None):
     """minimize func using Trust Region Newton algorithm
 
     Parameters
@@ -95,15 +105,20 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3):
     cdef double c_gtol = gtol
     cdef double c_tol = tol
     cdef int c_max_iter = max_iter
+    cdef void *py_callback
     cur_w = None
     x0_np = np.asarray(x0, dtype=np.float64)
     grad = np.empty(x0_np.size, dtype=np.float64)
+    if callback is None:
+        py_callback = NULL
+    else:
+        py_callback = <void *> callback
 
     cdef func_callback * fc = new func_callback(
         <double *> x0_np.data,
         <void *> func, c_func,
         <void *> grad_hess, c_grad,
-        c_hess, nr_variable, <void *> args)
+        c_hess, py_callback, c_callback, nr_variable, <void *> args)
 
     cdef TRON *solver = new TRON(fc, c_tol, c_gtol, c_max_iter)
     solver.tron(<double *> x0_np.data, <double *>grad.data)
