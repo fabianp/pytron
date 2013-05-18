@@ -69,7 +69,7 @@ cdef double c_callback(double *w, void *py_callback, int nr_variable,
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-    (<object> py_callback)(np.asarray(w0), *(<object> py_args))
+    (<object> py_callback)(np.asarray(w0))
     return 0.
 
 

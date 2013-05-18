@@ -126,7 +126,6 @@ void TRON::tron(double *w, double *g)
 			delta = max(delta, min(alpha*snorm, sigma3*delta));
 
 		info("iter %2d act %5.3e pre %5.3e delta %5.3e f %5.3e |g| %5.3e CG %3d\n", iter, actred, prered, delta, f, gnorm, cg_iter);
-        fun_obj->callback(w);
 
 		if (actred > eta0*prered)
 		{
@@ -139,6 +138,8 @@ void TRON::tron(double *w, double *g)
 			if (gnorm <= gtol)
 				break;
 		}
+		fun_obj->callback(w);
+
 		if (f < -1.0e+32)
 		{
 			info("WARNING: f < -1.0e+32\n");

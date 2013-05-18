@@ -40,7 +40,7 @@ y = np.sign(X.dot(5 * np.random.randn(n_features)))
 alpha = 1.
 x0 = np.zeros(n_features)
 
-def callback(x0, X, y, alpha):
+def callback(x0):
     print(loss(x0, X, y, alpha))
 # call the solver
 res = minimize(loss, grad_hess, x0, args=(X, y, alpha),
