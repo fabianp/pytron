@@ -5,7 +5,10 @@ A Trust-Region Newton Method in Python
     This is alpha quality software and still quite rough on the edges.
     Specifically the error management is still lacking (which means that
     if something goes wrong in the optimization you won't see an error
-    message but just get garbage). These things are being worked out.
+    message but just get garbage). These things are being worked out but
+    we're not quite there yet.
+
+.. image:: http://fa.bianp.net/blog/static/images/2013/comparison_logistic_corr_10.png
 
 The main function is pytron.minimize::
 
