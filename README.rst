@@ -45,9 +45,12 @@ Examples
 
 Code
 ----
-This software uses the `TRON optimization software
-<http://www.mcs.anl.gov/~more/tron/>`_  (files src/tron.{h,cpp}) that was
-taken from LIBLINEAR 1.93 (BSD licensed).
+This software uses the C++ implementation of `TRON optimization software
+<http://www.mcs.anl.gov/~more/tron/>`_  (files src/tron.{h,cpp})
+distributed from the LIBLINEAR sources (v1.93), which is BSD licensed.
+Note that the original Fortran TRON implementation (available
+`here <http://fa.bianp.net/projects/pytron/tron-1.2.tar.gz>`_) is not open
+source and is not used in this project.
 
 The modifications with respect to the orginal code are:
 
