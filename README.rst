@@ -19,13 +19,9 @@ The main function is pytron.minimize::
         func : callable
             func(w, *args) is the evaluation of the function at w, It
             should return a float.
-        grad: callable
-            grad(w, *args) is the gradient of func at w, it
-            should return a numpy array of size x0.size
-        hess: callable
-            hess(w, s, *args) returns the dot product H.dot(s), where
-            H is the Hessian matrix at w. It must return a numpy array
-            of size x0.size
+        grad_hess: callable
+            returns the gradient and a callable with the hessian times
+            an arbitrary vector.
         tol: float
             stopping criterion. XXX TODO. what is the stopping criterion ?
 
