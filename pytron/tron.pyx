@@ -125,7 +125,7 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3,
     success = solver.gnorm < gtol
     result = optimize.Result(
         x=x0_np, success=success, nit=solver.n_iter, gnorm=solver.gnorm,
-        fun=solver.fun, jac=grad)
+        fun=solver.fun, jac=grad, message='TODO')
 
     del fc
     del solver
