@@ -7,8 +7,8 @@ from cpython cimport Py_INCREF, Py_XDECREF, PyObject
 
 cdef extern from "tron_helper.h":
     ctypedef double (*func_cb)(double *, void *, int, void *)
-    ctypedef void (*grad_cb)(double *, void *, void **, double *, int, void *)
-    ctypedef void (*hess_cb)(double *, void *, double *, int, void *)
+    ctypedef int (*grad_cb)(double *, void *, void **, double *, int, void *)
+    ctypedef int (*hess_cb)(double *, void *, double *, int, void *)
     cdef cppclass func_callback:
         func_callback(double *, void *, func_cb,
             void *, grad_cb, hess_cb, void *, func_cb, int nr_variable, void *)
@@ -28,12 +28,13 @@ cdef double c_func(double *w, void *f_py, int nr_variable, void *py_args):
         mode='c', format='d', allocate_buffer=False)
     cdef double b
     w0.data = <char *> w
+    # TODO: exception return value
     out = (<object> f_py)(np.asarray(w0), *(<object> py_args))
     b = out
     return b
 
 
-cdef void c_grad(double *w, void *grad_hess_py, void **hess_py,
+cdef int c_grad(double *w, void *grad_hess_py, void **hess_py,
                  double *b, int nr_variable, void *py_args):
     cdef view.array b0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
@@ -41,15 +42,19 @@ cdef void c_grad(double *w, void *grad_hess_py, void **hess_py,
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-    out = (<object> grad_hess_py)(np.asarray(w0), *(<object> py_args))
+    try:
+        out = (<object> grad_hess_py)(np.asarray(w0), *(<object> py_args))
+    except:
+        return -1
     #Py_XDECREF(<PyObject *> hess_py[0]) # liberate previous one
     grad, hess = out[0], out[1]
     Py_INCREF(hess) # segfault otherwise
     b0[:] = grad[:]
     hess_py[0] = <void *> hess
+    return 0
 
 
-cdef void c_hess(double *s, void *hess_py, double *b, int nr_variable,
+cdef int c_hess(double *s, void *hess_py, double *b, int nr_variable,
                  void *py_args):
     cdef view.array b0 = view.array(shape=(nr_variable,),
         itemsize=sizeof(double), format='d',
@@ -59,9 +64,13 @@ cdef void c_hess(double *s, void *hess_py, double *b, int nr_variable,
         mode='c', allocate_buffer=False)
     s0.data = <char *> s
     b0.data = <char *> b
-    out = (<object> hess_py)(np.asarray(s0))
+    try:
+        out = (<object> hess_py)(np.asarray(s0))
+    except:
+        return -1
     out = np.asarray(out, dtype=np.float)
     b0[:] = out[:]
+    return 0
 
 cdef double c_callback(double *w, void *py_callback, int nr_variable,
                      void *py_args):
@@ -69,7 +78,7 @@ cdef double c_callback(double *w, void *py_callback, int nr_variable,
     cdef view.array w0 = view.array(shape=(nr_variable,), itemsize=sizeof(double),
         mode='c', format='d', allocate_buffer=False)
     w0.data = <char *> w
-    (<object> py_callback)(np.asarray(w0))
+    out = (<object> py_callback)(np.asarray(w0))
     return 0.
 
 

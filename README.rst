@@ -65,6 +65,8 @@ The modifications with respect to the orginal code are:
 
     * Rename `eps` to `gtol`.
 
+    * Use infinity norm as stopping criterion for gradient instead of L2.
+
 TODO
 ----
     * return status from TRON::TRON

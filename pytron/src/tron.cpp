@@ -80,7 +80,7 @@ void TRON::tron(double *w, double *g)
 
     f = fun_obj->fun(w);
 	fun_obj->grad(w, g);
-	delta = dnrm2_(&n, g, &inc);
+	delta = dnrm2_(&n, g, &inc); // TODO: use infinity norm
 	double gnorm1 = delta;
 	double gnorm = gnorm1;
 
@@ -134,7 +134,19 @@ void TRON::tron(double *w, double *g)
 			f = fnew;
 		        fun_obj->grad(w, g);
 
-			gnorm = dnrm2_(&n, g, &inc);
+            /* Edit (Fabian) use infinity norm for gradient
+            instead of L2
+            TODO: use idamax
+            */
+            gnorm = 0;
+            for (int ii=0; i<n; i++) {
+                if (fabs(g[ii]) > gnorm) {
+                    gnorm = fabs(g[ii]);
+                }
+            }
+            // int idx = idamax_(&n, g, &inc);
+            // gnorm = fabs(g[idx]);
+			/* gnorm = dnrm2_(&n, g, &inc);*/
 			if (gnorm <= gtol)
 				break;
 		}
