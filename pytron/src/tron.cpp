@@ -58,6 +58,10 @@ TRON::~TRON()
 
 void TRON::tron(double *w, double *g)
 {
+    /*
+    actred : Actual reduction
+    prered : predicted reduction
+    */
 	// Parameters for updating the iterates.
 	double eta0 = 1e-4, eta1 = 0.25, eta2 = 0.75;
 
@@ -102,7 +106,7 @@ void TRON::tron(double *w, double *g)
                 fnew = fun_obj->fun(w_new);
 
 		// Compute the actual reduction.
-	        actred = f - fnew;
+	    actred = f - fnew;
 
 		// On the first iteration, adjust the initial step bound.
 		snorm = dnrm2_(&n, s, &inc);
@@ -132,21 +136,10 @@ void TRON::tron(double *w, double *g)
 			iter++;
 			memcpy(w, w_new, sizeof(double)*n);
 			f = fnew;
-		        fun_obj->grad(w, g);
+		    fun_obj->grad(w, g);
 
-            /* Edit (Fabian) use infinity norm for gradient
-            instead of L2
-            TODO: use idamax
-            */
-            gnorm = 0;
-            for (int ii=0; i<n; i++) {
-                if (fabs(g[ii]) > gnorm) {
-                    gnorm = fabs(g[ii]);
-                }
-            }
-            // int idx = idamax_(&n, g, &inc);
-            // gnorm = fabs(g[idx]);
-			/* gnorm = dnrm2_(&n, g, &inc);*/
+            gnorm = norm_inf(n, g);
+			// gnorm = dnrm2_(&n, g, &inc);
 			if (gnorm <= gtol)
 				break;
 		}
