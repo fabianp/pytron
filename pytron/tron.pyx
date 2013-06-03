@@ -17,7 +17,7 @@ cdef extern from "tron_helper.h":
 cdef extern from "tron.h":
     cdef cppclass TRON:
         TRON(func_callback *, double, double, int)
-        void tron(double *, double *)
+        void tron(double *, double *, int)
         int n_iter
         double gnorm
         double fun
@@ -82,8 +82,8 @@ cdef double c_callback(double *w, void *py_callback, int nr_variable,
     return 0.
 
 
-def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3,
-             callback=None):
+def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1.,
+             callback=None, verbose=False):
     """minimize func using Trust Region Newton algorithm
 
     Parameters
@@ -96,7 +96,7 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3,
     x0 : array
         starting point for iteration.
     gtol: float
-        stopping criterion. Gradient norm must be less than gtol
+        Gradient infinity norm must be less than gtol
         before succesful termination.
 
     Returns
@@ -130,7 +130,7 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1e-3,
         c_hess, py_callback, c_callback, nr_variable, <void *> args)
 
     cdef TRON *solver = new TRON(fc, c_tol, c_gtol, c_max_iter)
-    solver.tron(<double *> x0_np.data, <double *>grad.data)
+    solver.tron(<double *> x0_np.data, <double *>grad.data, <int> verbose)
     success = solver.gnorm < gtol
     result = optimize.Result(
         x=x0_np, success=success, nit=solver.n_iter, gnorm=solver.gnorm,

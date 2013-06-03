@@ -20,7 +20,7 @@ public:
 	int max_iter = 1000);
 	~TRON();
 
-	void tron(double *w, double *g);
+	void tron(double *w, double *g, int verbose);
 	void set_print_string(void (*i_print) (const char *buf));
 	int n_iter;
 	double gnorm;

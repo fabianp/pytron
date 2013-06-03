@@ -56,7 +56,7 @@ TRON::~TRON()
 {
 }
 
-void TRON::tron(double *w, double *g)
+void TRON::tron(double *w, double *g, int verbose)
 {
     /*
     actred : Actual reduction
@@ -129,7 +129,8 @@ void TRON::tron(double *w, double *g)
 		else
 			delta = max(delta, min(alpha*snorm, sigma3*delta));
 
-		info("iter %2d act %5.3e pre %5.3e delta %5.3e f %5.3e |g| %5.3e CG %3d\n", iter, actred, prered, delta, f, gnorm, cg_iter);
+        if (verbose)
+		    info("iter %2d act %5.3e pre %5.3e delta %5.3e f %5.3e |g| %5.3e CG %3d\n", iter, actred, prered, delta, f, gnorm, cg_iter);
 
 		if (actred > eta0*prered)
 		{
