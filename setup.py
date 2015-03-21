@@ -1,8 +1,7 @@
-
-from distutils.core import setup, Extension
 from Cython.Distutils import build_ext
 import numpy as np
 from glob import glob
+from setuptools import setup, Extension
 
 CLASSIFIERS = """\
 Development Status :: 5 - Production/Stable
@@ -32,7 +31,7 @@ setup(
     long_description=open('README.rst').read(),
     version='0.1',
     author='Fabian Pedregosa',
-    author_email='f@fabianp.net',
+    author_email='f@bianp.net',
     url='http://pypi.python.org/pypi/pytron',
     packages=['pytron'],
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
