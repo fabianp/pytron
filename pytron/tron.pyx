@@ -132,7 +132,7 @@ def minimize(func, grad_hess, x0, args=(), max_iter=500, tol=1e-6, gtol=1.,
     cdef TRON *solver = new TRON(fc, c_tol, c_gtol, c_max_iter)
     solver.tron(<double *> x0_np.data, <double *>grad.data, <int> verbose)
     success = solver.gnorm < gtol
-    result = optimize.Result(
+    result = optimize.OptimizeResult(
         x=x0_np, success=success, nit=solver.n_iter, gnorm=solver.gnorm,
         fun=solver.fun, jac=grad, message='TODO')
 

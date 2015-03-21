@@ -29,7 +29,7 @@ setup(
     name='pytron',
     description='Python bindings for TRON optimizer',
     long_description=open('README.rst').read(),
-    version='0.1',
+    version='0.2',
     author='Fabian Pedregosa',
     author_email='f@bianp.net',
     url='http://pypi.python.org/pypi/pytron',
