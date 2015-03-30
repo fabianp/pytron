@@ -33,24 +33,26 @@ def grad_hess(w, X, y, alpha):
 
 
 
-# set the data
-n_samples, n_features = 100, 10
-X = np.random.randn(n_samples, n_features)
-y = np.sign(X.dot(5 * np.random.randn(n_features)))
-alpha = 1.
-x0 = np.zeros(n_features)
+if __name__ == '__main__':
+    # set the data
+    n_samples, n_features = 100, 10
+    X = np.random.randn(n_samples, n_features)
+    y = np.sign(X.dot(5 * np.random.randn(n_features)))
+    alpha = 1.
+    x0 = np.zeros(n_features)
 
-def callback(x0):
-    print(loss(x0, X, y, alpha))
-# call the solver
-res = minimize(loss, grad_hess, x0, args=(X, y, alpha),
-    max_iter=15, gtol=1e-3, tol=1e-12, callback=callback)
-print(res)
 
-from sklearn import linear_model
-clf = linear_model.LogisticRegression(C=1./alpha, fit_intercept=False)
-clf.fit(X, y)
+    def callback(x0):
+        print(loss(x0, X, y, alpha))
+    # call the solver
+    res = minimize(loss, grad_hess, x0, args=(X, y, alpha),
+        max_iter=15, gtol=1e-3, tol=1e-12, callback=callback)
+    print(res)
 
-print()
-print('Solution using TRON:         %s' % res.x)
-print('Solution using scikit-learn: %s' % clf.coef_)
+    from sklearn import linear_model
+    clf = linear_model.LogisticRegression(C=1./alpha, fit_intercept=False)
+    clf.fit(X, y)
+
+    print()
+    print('Solution using TRON:         %s' % res.x)
+    print('Solution using scikit-learn: %s' % clf.coef_)
