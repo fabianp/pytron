@@ -1,28 +1,18 @@
 import numpy as np
-from scipy import linalg
+from scipy import optimize
 from example_logistic import loss, grad_hess
+from sklearn import datasets, cross_validation
+from nose import tools
 
 
-n_samples, n_features = 100, 10
-X = np.random.randn(n_samples, n_features)
-y = np.sign(X.dot(5 * np.random.randn(n_features)))
-alpha = 1.
-x0 = np.zeros(n_features)
+def test_grad_logistic():
+    X, y = datasets.make_classification()
+    y[y==0] = -1
+    y = y.astype(np.float)
 
+    f = lambda x: loss(x, X, y, 1.)
+    f_grad = lambda x: grad_hess(x, X, y, 1.)[0]
 
-def test1():
-	import numdifftools as nd
-	H1 = nd.Hessian(lambda x: loss(x, X, y, 1.))(X[0])
+    small = optimize.check_grad(f, f_grad, np.random.randn(X.shape[1]))
+    tools.assert_less(small, 1.)
 
-	def hessian(w, X, y, alpha):
-	    # Hessian-times s
-	    grad, hess = grad_hess(w, X, y, alpha)
-	    return hess
-
-	H2 = [hessian(X[0], X, y, 1.)(np.eye(X.shape[1])[i])  \
-		for i in range(X.shape[1])]
-	assert linalg.norm(H2 - H1) < 1e-3
-
-
-if __name__ == '__main__':
-	test1()
